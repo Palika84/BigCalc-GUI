@@ -1,0 +1,9 @@
+# Build output
+*.exe
+*.o
+*.obj
+compile_out.txt
+calc_pre.txt
+
+# Runtime-generated, per-machine
+bigcalc_lang.ini
