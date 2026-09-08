@@ -14,6 +14,7 @@
 
 #include "Calculator.hpp"
 #include "Lang.hpp"
+#include "Theme.hpp"
 #include "ModeEngine.hpp"
 #include "crypto/BitcoinCrypto.hpp"
 
@@ -58,17 +59,108 @@ enum CtrlId : int {
     ID_SPLIT_HEX_HIST,
     ID_LBL_LANG,
     ID_COMBO_LANG,
+    ID_LBL_THEME,
+    ID_COMBO_THEME,
+    ID_LBL_APPTITLE,
+    ID_LBL_APPSUBTITLE,
     ID_CTX_COPY_CELL = 2001,
     ID_CTX_COPY_ROW
 };
 
 enum : int {
     SPLIT_THICK = 6,
-    PANEL_MIN_H = 40
+    PANEL_MIN_H = 40,
+    CARD_PAD = 6
 };
+
+// ---------------------------------------------------------------
+// Megjelenes (skin) tamogatas: szinpaletta + betutipus-parositas
+// temankent. A Qt6-os (Linux) build QSS temainak Win32/GDI megfeleloi.
+// ---------------------------------------------------------------
+
+struct ThemePalette {
+    COLORREF winBg;
+    COLORREF panelBg;
+    COLORREF panelBorder;
+    COLORREF text;
+    COLORREF textDim;
+    COLORREF accent;
+    COLORREF accentText;
+    COLORREF inputBg;
+    COLORREF btnSecondaryText;
+    COLORREF tableHeaderBg;
+    COLORREF tableHeaderText;
+    COLORREF tableRowBg;
+    COLORREF tableSelBg;
+    COLORREF tableSelText;
+    const wchar_t* uiFont;
+    const wchar_t* uiFontTitle;
+    const wchar_t* monoFont;
+};
+
+static const ThemePalette& paletteFor(Theme t) {
+    static const ThemePalette terminalDark{
+        RGB(0x17, 0x1d, 0x1a), // winBg
+        RGB(0x10, 0x15, 0x13), // panelBg
+        RGB(0x50, 0x65, 0x52), // panelBorder (blended)
+        RGB(0xcf, 0xea, 0xd9), // text
+        RGB(0x6f, 0x8f, 0x7c), // textDim
+        RGB(0x39, 0xff, 0x88), // accent
+        RGB(0x0c, 0x13, 0x10), // accentText
+        RGB(0x10, 0x15, 0x13), // inputBg
+        RGB(0x9d, 0xb8, 0xa9), // btnSecondaryText
+        RGB(0x1c, 0x26, 0x22), // tableHeaderBg
+        RGB(0x9d, 0xb8, 0xa9), // tableHeaderText
+        RGB(0x10, 0x15, 0x13), // tableRowBg
+        RGB(0x2a, 0x5b, 0x3f), // tableSelBg
+        RGB(0xea, 0xff, 0xf2), // tableSelText
+        L"JetBrains Mono", L"JetBrains Mono", L"JetBrains Mono"
+    };
+    static const ThemePalette lightDashboard{
+        RGB(0xf6, 0xf7, 0xfb), // winBg
+        RGB(0xff, 0xff, 0xff), // panelBg
+        RGB(0xdd, 0xe0, 0xea), // panelBorder
+        RGB(0x2c, 0x30, 0x42), // text
+        RGB(0x66, 0x6c, 0x80), // textDim
+        RGB(0x4f, 0x5f, 0xd1), // accent
+        RGB(0xff, 0xff, 0xff), // accentText
+        RGB(0xff, 0xff, 0xff), // inputBg
+        RGB(0x4b, 0x51, 0x64), // btnSecondaryText
+        RGB(0xf6, 0xf7, 0xfb), // tableHeaderBg
+        RGB(0x6a, 0x6f, 0x82), // tableHeaderText
+        RGB(0xff, 0xff, 0xff), // tableRowBg
+        RGB(0xe8, 0xea, 0xff), // tableSelBg
+        RGB(0x2c, 0x30, 0x42), // tableSelText
+        L"Manrope", L"Manrope", L"IBM Plex Mono"
+    };
+    static const ThemePalette darkFintech{
+        RGB(0x1b, 0x21, 0x30), // winBg
+        RGB(0x22, 0x29, 0x39), // panelBg
+        RGB(0x33, 0x3c, 0x50), // panelBorder
+        RGB(0xdd, 0xe1, 0xea), // text
+        RGB(0x92, 0x9a, 0xad), // textDim
+        RGB(0xe0, 0xb2, 0x5a), // accent
+        RGB(0x1b, 0x21, 0x30), // accentText
+        RGB(0x22, 0x29, 0x39), // inputBg
+        RGB(0xa7, 0xad, 0xba), // btnSecondaryText
+        RGB(0x26, 0x2e, 0x40), // tableHeaderBg
+        RGB(0x92, 0x9a, 0xad), // tableHeaderText
+        RGB(0x22, 0x29, 0x39), // tableRowBg
+        RGB(0x4a, 0x3c, 0x22), // tableSelBg
+        RGB(0xf3, 0xe6, 0xc8), // tableSelText
+        L"Space Grotesk", L"Space Grotesk", L"IBM Plex Mono"
+    };
+    switch (t) {
+    case Theme::LightDashboard: return lightDashboard;
+    case Theme::DarkFintech: return darkFintech;
+    default: return terminalDark;
+    }
+}
 
 struct AppState {
     HWND hwnd = nullptr;
+    HWND hLblAppTitle = nullptr;
+    HWND hLblAppSubtitle = nullptr;
     HWND hLeft = nullptr;
     HWND hOp = nullptr;
     HWND hRight = nullptr;
@@ -84,8 +176,14 @@ struct AppState {
     HWND hSplitHexHist = nullptr;
     HWND hLblLang = nullptr;
     HWND hComboLang = nullptr;
-    HFONT hFont = nullptr;
+    HWND hLblTheme = nullptr;
+    HWND hComboTheme = nullptr;
+    HFONT hFontTitle = nullptr;
+    HFONT hFontUi = nullptr;
+    HFONT hFontUiSemibold = nullptr;
     HFONT hFontMono = nullptr;
+    HBRUSH hBgBrush = nullptr;
+    HBRUSH hInputBrush = nullptr;
     bool ready = false;
     // A harom also panel relativ magassaga (osszeg = 1.0)
     double fracDec = 0.36;
@@ -102,9 +200,13 @@ struct AppState {
     int hHistPx = 0;
     int histRow = -1;
     int histCol = 0;
+    RECT rcDecCard{};
+    RECT rcHexCard{};
+    RECT rcHistCard{};
 };
 
 static AppState g;
+static WNDPROC g_origHeaderProc = nullptr;
 
 static std::wstring widen(const std::string& s) {
     if (s.empty()) return L"";
@@ -137,18 +239,21 @@ static void setStatus(const std::wstring& s) {
     if (g.hStatus) setText(g.hStatus, s);
 }
 
-// --- Nyelvi beallitas: bigcalc_lang.ini az exe mellett, egyetlen sor "HU"/"EN"/"DE" ---
-static std::wstring exeDirIniPath() {
+// --- exe konyvtar, nyelvi/tema beallitas fajlok es becsomagolt betutipusok ---
+static std::wstring exeDir() {
     wchar_t buf[MAX_PATH];
     DWORD n = GetModuleFileNameW(nullptr, buf, MAX_PATH);
     std::wstring path(buf, n);
     size_t slash = path.find_last_of(L"\\/");
-    std::wstring dir = (slash == std::wstring::npos) ? L"" : path.substr(0, slash + 1);
-    return dir + langIniName();
+    return (slash == std::wstring::npos) ? L"" : path.substr(0, slash + 1);
+}
+
+static std::wstring exeDirIniPath(const wchar_t* name) {
+    return exeDir() + name;
 }
 
 static void loadLangFromIni() {
-    std::ifstream in(exeDirIniPath().c_str());
+    std::ifstream in(exeDirIniPath(langIniName()).c_str());
     if (!in) return;
     std::string code;
     std::getline(in, code);
@@ -157,9 +262,57 @@ static void loadLangFromIni() {
 }
 
 static void saveLangToIni() {
-    std::ofstream out(exeDirIniPath().c_str(), std::ios::trunc);
+    std::ofstream out(exeDirIniPath(langIniName()).c_str(), std::ios::trunc);
     if (!out) return;
     out << langToCode(g_lang);
+}
+
+static void loadThemeFromIni() {
+    std::ifstream in(exeDirIniPath(themeIniName()).c_str());
+    if (!in) return;
+    std::string code;
+    std::getline(in, code);
+    while (!code.empty() && (code.back() == '\r' || code.back() == '\n')) code.pop_back();
+    g_theme = themeFromCode(code);
+}
+
+static void saveThemeToIni() {
+    std::ofstream out(exeDirIniPath(themeIniName()).c_str(), std::ios::trunc);
+    if (!out) return;
+    out << themeToCode(g_theme);
+}
+
+// A becsomagolt betutipusok az exe melletti fonts\ konyvtarban keresendok
+// (a build.bat/telepites masolja oda a repo fonts/ mappajat).
+static void loadBundledFonts() {
+    const wchar_t* files[] = {
+        L"fonts\\JetBrainsMono\\JetBrainsMono-Regular.ttf",
+        L"fonts\\JetBrainsMono\\JetBrainsMono-Medium.ttf",
+        L"fonts\\JetBrainsMono\\JetBrainsMono-SemiBold.ttf",
+        L"fonts\\JetBrainsMono\\JetBrainsMono-Bold.ttf",
+        L"fonts\\JetBrainsMono\\JetBrainsMono-ExtraBold.ttf",
+        L"fonts\\Manrope\\Manrope-Regular.ttf",
+        L"fonts\\Manrope\\Manrope-Medium.ttf",
+        L"fonts\\Manrope\\Manrope-SemiBold.ttf",
+        L"fonts\\Manrope\\Manrope-Bold.ttf",
+        L"fonts\\Manrope\\Manrope-ExtraBold.ttf",
+        L"fonts\\IBMPlexMono\\IBMPlexMono-Regular.ttf",
+        L"fonts\\IBMPlexMono\\IBMPlexMono-Medium.ttf",
+        L"fonts\\IBMPlexMono\\IBMPlexMono-SemiBold.ttf",
+        L"fonts\\SpaceGrotesk\\SpaceGrotesk-Regular.ttf",
+        L"fonts\\SpaceGrotesk\\SpaceGrotesk-Medium.ttf",
+        L"fonts\\SpaceGrotesk\\SpaceGrotesk-SemiBold.ttf",
+        L"fonts\\SpaceGrotesk\\SpaceGrotesk-Bold.ttf",
+    };
+    std::wstring dir = exeDir();
+    for (const wchar_t* f : files) {
+        std::wstring path = dir + f;
+        AddFontResourceExW(path.c_str(), FR_PRIVATE, nullptr);
+    }
+}
+
+static void removeBundledFonts() {
+    RemoveFontResourceExW((exeDir() + L"fonts\\").c_str(), FR_PRIVATE, nullptr);
 }
 
 static void normalizeFracs() {
@@ -182,60 +335,70 @@ static void layoutControls(int cx, int cy) {
     g.clientW = cx;
     g.clientH = cy;
 
-    const int m = 12;
+    const int m = 14;
     const int gap = 8;
     const int rowH = 26;
-    const int lblH = 18;
+    const int lblH = 16;
     const int btnH = 32;
     const int statusH = 22;
+    const int headerH = 52;
 
-    int y = m;
     int contentW = cx - 2 * m;
     if (contentW < 200) contentW = 200;
 
-    int opW = 68;
-    int precW = 92;
-    int langW = 130;
-    int midGap = gap;
-    int avail = contentW - opW - precW - langW - 4 * midGap;
-    int leftW = avail * 45 / 100;
-    int rightW = avail - leftW;
-
+    // --- header: cim/alcim balra, Nyelv + Megjelenes jobbra ---
+    int y = m;
+    int langW = 108, themeW = 130, hdrGap = 10;
+    int titleW = contentW - langW - themeW - 2 * hdrGap;
+    if (titleW < 120) titleW = 120;
     auto place = [](HWND wnd, int x, int yy, int w, int h) {
         if (wnd) MoveWindow(wnd, x, yy, w, h, TRUE);
     };
+    place(g.hLblAppTitle, m, y, titleW, 24);
+    place(g.hLblAppSubtitle, m, y + 24, titleW, 18);
+    place(g.hLblLang, m + contentW - langW - hdrGap - themeW, y, langW, lblH);
+    place(g.hComboLang, m + contentW - langW - hdrGap - themeW, y + lblH + 2, langW, rowH);
+    place(g.hLblTheme, m + contentW - themeW, y, themeW, lblH);
+    place(g.hComboTheme, m + contentW - themeW, y + lblH + 2, themeW, rowH);
+    y += headerH;
+
+    // --- Bal / Muvelet / Jobb / Pontossag ---
+    int opW = 60;
+    int precW = 84;
+    int midGap = gap;
+    int avail = contentW - opW - precW - 2 * midGap;
+    int leftW = avail * 55 / 100;
+    int rightW = avail - leftW;
 
     place(GetDlgItem(g.hwnd, ID_LBL_LEFT), m, y, leftW, lblH);
     place(GetDlgItem(g.hwnd, ID_LBL_OP), m + leftW + midGap, y, opW, lblH);
     place(GetDlgItem(g.hwnd, ID_LBL_RIGHT), m + leftW + midGap + opW + midGap, y, rightW, lblH);
     place(GetDlgItem(g.hwnd, ID_LBL_PREC), m + leftW + midGap + opW + midGap + rightW + midGap, y, precW, lblH);
-    place(g.hLblLang, m + contentW - langW, y, langW, lblH);
     y += lblH + 2;
 
     place(g.hLeft, m, y, leftW, rowH);
     place(g.hOp, m + leftW + midGap, y, opW, rowH + 120);
     place(g.hRight, m + leftW + midGap + opW + midGap, y, rightW, rowH);
     place(g.hPrec, m + leftW + midGap + opW + midGap + rightW + midGap, y, precW, rowH);
-    place(g.hComboLang, m + contentW - langW, y, langW, rowH + 120);
     y += rowH + gap;
 
     place(GetDlgItem(g.hwnd, ID_LBL_EXPR), m, y, contentW, lblH);
     y += lblH + 2;
 
-    int btnW = 110;
+    int btnW = 112;
     int exprW = contentW - 2 * btnW - 2 * gap;
     if (exprW < 120) exprW = 120;
     place(g.hExpr, m, y, exprW, rowH);
     place(g.hBtnCalc, m + exprW + gap, y - 2, btnW, btnH);
     place(g.hBtnClear, m + exprW + gap + btnW + gap, y - 2, btnW, btnH);
-    y += btnH + gap + 4;
+    y += btnH + gap + 6;
 
-    // Also harom panel + 2 huzzhato splitter
+    // Also harom panel + 2 huzhato splitter
     int bottom = cy - m - statusH - gap;
     int remain = bottom - y;
     if (remain < 160) remain = 160;
 
-    const int chrome = 3 * lblH + 6 + 2 * SPLIT_THICK; // cimkek + splitterek
+    const int chrome = 3 * (lblH + 2) + 2 * SPLIT_THICK;
     int panelSpace = remain - chrome;
     if (panelSpace < 3 * PANEL_MIN_H) panelSpace = 3 * PANEL_MIN_H;
 
@@ -248,33 +411,41 @@ static void layoutControls(int cx, int cy) {
     if (hexH < PANEL_MIN_H) hexH = PANEL_MIN_H;
     if (histH < PANEL_MIN_H) histH = PANEL_MIN_H;
 
+    int labelDecY = y;
     place(GetDlgItem(g.hwnd, ID_LBL_DEC), m, y, contentW, lblH);
     y += lblH + 2;
     g.yDecTop = y;
     g.hDecPx = decH;
     place(g.hDec, m, y, contentW, decH);
+    g.rcDecCard = { m - CARD_PAD, labelDecY - CARD_PAD, m + contentW + CARD_PAD, y + decH + CARD_PAD };
     y += decH;
 
     place(g.hSplitDecHex, m, y, contentW, SPLIT_THICK);
     y += SPLIT_THICK;
 
+    int labelHexY = y;
     place(GetDlgItem(g.hwnd, ID_LBL_HEX), m, y, contentW, lblH);
     y += lblH + 2;
     g.yHexTop = y;
     g.hHexPx = hexH;
     place(g.hHex, m, y, contentW, hexH);
+    g.rcHexCard = { m - CARD_PAD, labelHexY - CARD_PAD, m + contentW + CARD_PAD, y + hexH + CARD_PAD };
     y += hexH;
 
     place(g.hSplitHexHist, m, y, contentW, SPLIT_THICK);
     y += SPLIT_THICK;
 
+    int labelHistY = y;
     place(GetDlgItem(g.hwnd, ID_LBL_HIST), m, y, contentW, lblH);
     y += lblH + 2;
     g.yHistTop = y;
     g.hHistPx = histH;
     place(g.hHist, m, y, contentW, histH);
+    g.rcHistCard = { m - CARD_PAD, labelHistY - CARD_PAD, m + contentW + CARD_PAD, y + histH + CARD_PAD };
 
     place(g.hStatus, m, cy - m - statusH, contentW, statusH);
+
+    if (g.hwnd) InvalidateRect(g.hwnd, nullptr, FALSE);
 }
 
 static void applySplitDrag(int splitId, int clientY) {
@@ -282,7 +453,6 @@ static void applySplitDrag(int splitId, int clientY) {
     if (total <= 0) return;
 
     if (splitId == 1) {
-        // Uj dec magassag: a splitter a dec alja
         int newDec = clientY - g.yDecTop;
         int pair = g.hDecPx + g.hHexPx;
         if (newDec < PANEL_MIN_H) newDec = PANEL_MIN_H;
@@ -292,7 +462,6 @@ static void applySplitDrag(int splitId, int clientY) {
         g.fracHex = (double)newHex / total;
         g.fracHist = (double)g.hHistPx / total;
     } else if (splitId == 2) {
-        // Uj hex also hatara = splitter; hist = ami utana marad
         int newHexBottom = clientY;
         int newHex = newHexBottom - g.yHexTop;
         int pair = g.hHexPx + g.hHistPx;
@@ -312,6 +481,8 @@ static LRESULT CALLBACK SplitterProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
     case WM_SETCURSOR:
         SetCursor(LoadCursor(nullptr, IDC_SIZENS));
         return TRUE;
+    case WM_ERASEBKGND:
+        return 1;
     case WM_LBUTTONDOWN: {
         SetCapture(hwnd);
         int id = GetDlgCtrlID(hwnd);
@@ -339,10 +510,12 @@ static LRESULT CALLBACK SplitterProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM 
         HDC hdc = BeginPaint(hwnd, &ps);
         RECT rc;
         GetClientRect(hwnd, &rc);
-        FillRect(hdc, &rc, (HBRUSH)(COLOR_BTNFACE + 1));
-        // Kozepso fogasi vonal
+        const ThemePalette& p = paletteFor(g_theme);
+        HBRUSH b = CreateSolidBrush(p.winBg);
+        FillRect(hdc, &rc, b);
+        DeleteObject(b);
         int mid = (rc.top + rc.bottom) / 2;
-        HPEN pen = CreatePen(PS_SOLID, 1, GetSysColor(COLOR_BTNSHADOW));
+        HPEN pen = CreatePen(PS_SOLID, 1, p.panelBorder);
         HGDIOBJ old = SelectObject(hdc, pen);
         MoveToEx(hdc, rc.left + 8, mid, nullptr);
         LineTo(hdc, rc.right - 8, mid);
@@ -361,9 +534,61 @@ static void registerSplitterClass(HINSTANCE hInst) {
     wc.lpfnWndProc = SplitterProc;
     wc.hInstance = hInst;
     wc.hCursor = LoadCursor(nullptr, IDC_SIZENS);
-    wc.hbrBackground = (HBRUSH)(COLOR_BTNFACE + 1);
+    wc.hbrBackground = nullptr;
     wc.lpszClassName = L"BigCalcSplitter";
     RegisterClassExW(&wc);
+}
+
+// --- ListView (Elozmenyek) fejlecenek egyeni szinezese subclass-szal ---
+static LRESULT CALLBACK HeaderSubclassProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    if (msg == WM_ERASEBKGND)
+        return 1;
+    if (msg == WM_PAINT) {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        const ThemePalette& p = paletteFor(g_theme);
+        RECT rcClient;
+        GetClientRect(hwnd, &rcClient);
+        HBRUSH bg = CreateSolidBrush(p.tableHeaderBg);
+        FillRect(hdc, &rcClient, bg);
+        DeleteObject(bg);
+
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, p.tableHeaderText);
+        HFONT font = (HFONT)SendMessageW(hwnd, WM_GETFONT, 0, 0);
+        HGDIOBJ oldFont = font ? SelectObject(hdc, font) : nullptr;
+
+        int count = Header_GetItemCount(hwnd);
+        HPEN pen = CreatePen(PS_SOLID, 1, p.panelBorder);
+        HGDIOBJ oldPen = SelectObject(hdc, pen);
+        for (int i = 0; i < count; ++i) {
+            RECT rcItem;
+            Header_GetItemRect(hwnd, i, &rcItem);
+            wchar_t buf[256] = {};
+            HDITEMW hdi{};
+            hdi.mask = HDI_TEXT;
+            hdi.pszText = buf;
+            hdi.cchTextMax = 255;
+            Header_GetItem(hwnd, i, &hdi);
+            RECT rcText = rcItem;
+            rcText.left += 6;
+            DrawTextW(hdc, buf, -1, &rcText, DT_VCENTER | DT_SINGLELINE | DT_LEFT);
+            MoveToEx(hdc, rcItem.right - 1, rcItem.top + 4, nullptr);
+            LineTo(hdc, rcItem.right - 1, rcItem.bottom - 4);
+        }
+        SelectObject(hdc, oldPen);
+        DeleteObject(pen);
+        if (oldFont) SelectObject(hdc, oldFont);
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+    return CallWindowProcW(g_origHeaderProc, hwnd, msg, wParam, lParam);
+}
+
+static void subclassHistHeader() {
+    HWND hHeader = ListView_GetHeader(g.hHist);
+    if (!hHeader || g_origHeaderProc) return;
+    g_origHeaderProc = (WNDPROC)SetWindowLongPtrW(hHeader, GWLP_WNDPROC, (LONG_PTR)HeaderSubclassProc);
 }
 
 static char selectedOp() {
@@ -582,14 +807,14 @@ static void initHistoryColumns() {
         col.pszText = const_cast<wchar_t*>(title.c_str());
         SendMessageW(g.hHist, LVM_INSERTCOLUMNW, idx, (LPARAM)&col);
     };
-    addCol(0, widen(T(Msg::ColExpr)), 220);
-    addCol(1, widen(T(Msg::ColResult)), 200);
-    addCol(2, widen(T(Msg::ColWif)), 280);
-    addCol(3, widen(T(Msg::ColPub)), 280);
-    addCol(4, widen(T(Msg::ColAddress)), 220);
+    addCol(0, widen(T(Msg::ColExpr)), 190);
+    addCol(1, widen(T(Msg::ColResult)), 170);
+    addCol(2, widen(T(Msg::ColWif)), 270);
+    addCol(3, widen(T(Msg::ColPub)), 270);
+    addCol(4, widen(T(Msg::ColAddress)), 230);
 
     ListView_SetExtendedListViewStyle(g.hHist,
-        LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
+        LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
 }
 
 // Nyelvvaltaskor: oszlopfejlecek ujraforditasa (a ListView nem ad direkt "SetColumnText"-et,
@@ -609,9 +834,10 @@ static void relabelHistoryColumns() {
 }
 
 // Osszes GUI-chrome szoveg ujraforditasa az aktualis g_lang szerint.
-// Nyelvvaltaskor es inditaskor is ez alliltja be a feliratokat.
 static void applyTranslations() {
     if (g.hwnd) SetWindowTextW(g.hwnd, widen(T(Msg::WinTitle)).c_str());
+    setText(g.hLblAppTitle, L"BigCalc");
+    setText(g.hLblAppSubtitle, widen(T(Msg::AppSubtitle)));
     setText(GetDlgItem(g.hwnd, ID_LBL_LEFT), widen(T(Msg::LblLeft)));
     setText(GetDlgItem(g.hwnd, ID_LBL_OP), widen(T(Msg::LblOp)));
     setText(GetDlgItem(g.hwnd, ID_LBL_RIGHT), widen(T(Msg::LblRight)));
@@ -621,8 +847,18 @@ static void applyTranslations() {
     setText(GetDlgItem(g.hwnd, ID_LBL_HEX), widen(T(Msg::LblHex)));
     setText(GetDlgItem(g.hwnd, ID_LBL_HIST), widen(T(Msg::LblHist)));
     setText(GetDlgItem(g.hwnd, ID_LBL_LANG), widen(T(Msg::LangLabel)));
+    setText(g.hLblTheme, widen(T(Msg::ThemeLabel)));
     setText(g.hBtnCalc, widen(T(Msg::BtnCalc)));
     setText(g.hBtnClear, widen(T(Msg::BtnClear)));
+
+    // Tema-combo felirat ujraforditasa, kivalasztott index megorzesevel
+    int sel = (int)SendMessageW(g.hComboTheme, CB_GETCURSEL, 0, 0);
+    SendMessageW(g.hComboTheme, CB_RESETCONTENT, 0, 0);
+    SendMessageW(g.hComboTheme, CB_ADDSTRING, 0, (LPARAM)widen(T(Msg::ThemeTerminal)).c_str());
+    SendMessageW(g.hComboTheme, CB_ADDSTRING, 0, (LPARAM)widen(T(Msg::ThemeLight)).c_str());
+    SendMessageW(g.hComboTheme, CB_ADDSTRING, 0, (LPARAM)widen(T(Msg::ThemeFintech)).c_str());
+    SendMessageW(g.hComboTheme, CB_SETCURSEL, sel < 0 ? (WPARAM)g_theme : (WPARAM)sel, 0);
+
     if (g.hHist) relabelHistoryColumns();
     setStatus(widen(T(Msg::StatusReady)));
 }
@@ -637,23 +873,156 @@ static HWND makeEdit(HWND parent, int id, bool multiline, bool readOnly) {
     DWORD style = WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER | ES_AUTOHSCROLL;
     if (multiline) style |= ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL;
     if (readOnly) style |= ES_READONLY;
-    return CreateWindowExW(WS_EX_CLIENTEDGE, L"EDIT", L"",
+    return CreateWindowExW(0, L"EDIT", L"",
         style, 0, 0, 10, 10, parent, (HMENU)(intptr_t)id, GetModuleHandleW(nullptr), nullptr);
 }
 
-static void applyFonts(HWND root) {
-    EnumChildWindows(root, [](HWND h, LPARAM lp) -> BOOL {
-        SendMessageW(h, WM_SETFONT, (WPARAM)lp, TRUE);
-        return TRUE;
-    }, (LPARAM)g.hFont);
+// --- Betutipusok (ujra)letrehozasa az aktualis tema szerint ---
+static void rebuildFonts() {
+    const ThemePalette& p = paletteFor(g_theme);
+    if (g.hFontTitle) DeleteObject(g.hFontTitle);
+    if (g.hFontUi) DeleteObject(g.hFontUi);
+    if (g.hFontUiSemibold) DeleteObject(g.hFontUiSemibold);
+    if (g.hFontMono) DeleteObject(g.hFontMono);
 
-    // Eredmények monospaced a hosszú hex/dec miatt
-    SendMessageW(g.hDec, WM_SETFONT, (WPARAM)g.hFontMono, TRUE);
-    SendMessageW(g.hHex, WM_SETFONT, (WPARAM)g.hFontMono, TRUE);
-    SendMessageW(g.hHist, WM_SETFONT, (WPARAM)g.hFontMono, TRUE);
-    SendMessageW(g.hExpr, WM_SETFONT, (WPARAM)g.hFontMono, TRUE);
-    SendMessageW(g.hLeft, WM_SETFONT, (WPARAM)g.hFontMono, TRUE);
-    SendMessageW(g.hRight, WM_SETFONT, (WPARAM)g.hFontMono, TRUE);
+    g.hFontTitle = CreateFontW(-22, 0, 0, 0, FW_EXTRABOLD, FALSE, FALSE, FALSE,
+        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+        DEFAULT_PITCH | FF_SWISS, p.uiFontTitle);
+    g.hFontUi = CreateFontW(-14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+        DEFAULT_PITCH | FF_SWISS, p.uiFont);
+    g.hFontUiSemibold = CreateFontW(-14, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE,
+        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+        DEFAULT_PITCH | FF_SWISS, p.uiFont);
+    g.hFontMono = CreateFontW(-14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+        FIXED_PITCH | FF_MODERN, p.monoFont);
+}
+
+static void applyFonts() {
+    SendMessageW(g.hLblAppTitle, WM_SETFONT, (WPARAM)g.hFontTitle, TRUE);
+
+    HWND uiWidgets[] = {
+        g.hLblAppSubtitle, GetDlgItem(g.hwnd, ID_LBL_LEFT), GetDlgItem(g.hwnd, ID_LBL_OP),
+        GetDlgItem(g.hwnd, ID_LBL_RIGHT), GetDlgItem(g.hwnd, ID_LBL_PREC), GetDlgItem(g.hwnd, ID_LBL_EXPR),
+        g.hLblLang, g.hComboLang, g.hLblTheme, g.hComboTheme, g.hOp, g.hStatus
+    };
+    for (HWND h : uiWidgets)
+        if (h) SendMessageW(h, WM_SETFONT, (WPARAM)g.hFontUi, TRUE);
+
+    HWND semiboldWidgets[] = {
+        GetDlgItem(g.hwnd, ID_LBL_DEC), GetDlgItem(g.hwnd, ID_LBL_HEX), GetDlgItem(g.hwnd, ID_LBL_HIST),
+        g.hBtnCalc, g.hBtnClear
+    };
+    for (HWND h : semiboldWidgets)
+        if (h) SendMessageW(h, WM_SETFONT, (WPARAM)g.hFontUiSemibold, TRUE);
+
+    HWND monoWidgets[] = { g.hDec, g.hHex, g.hHist, g.hExpr, g.hLeft, g.hRight, g.hPrec };
+    for (HWND h : monoWidgets)
+        if (h) SendMessageW(h, WM_SETFONT, (WPARAM)g.hFontMono, TRUE);
+}
+
+static void applyListViewColors() {
+    const ThemePalette& p = paletteFor(g_theme);
+    ListView_SetBkColor(g.hHist, p.tableRowBg);
+    ListView_SetTextColor(g.hHist, p.text);
+    ListView_SetTextBkColor(g.hHist, p.tableRowBg);
+    HWND hHeader = ListView_GetHeader(g.hHist);
+    if (hHeader) {
+        SendMessageW(hHeader, WM_SETFONT, (WPARAM)g.hFontUiSemibold, TRUE);
+        InvalidateRect(hHeader, nullptr, TRUE);
+    }
+    InvalidateRect(g.hHist, nullptr, TRUE);
+}
+
+// Teljes megjeleneskor-valto: betutipusok, ecsetek, ListView szinek, ujrarajzolas.
+static void applyTheme(Theme t) {
+    g_theme = t;
+    rebuildFonts();
+    applyFonts();
+
+    const ThemePalette& p = paletteFor(t);
+    if (g.hBgBrush) DeleteObject(g.hBgBrush);
+    if (g.hInputBrush) DeleteObject(g.hInputBrush);
+    g.hBgBrush = CreateSolidBrush(p.winBg);
+    g.hInputBrush = CreateSolidBrush(p.inputBg);
+
+    applyListViewColors();
+
+    int sel = (int)SendMessageW(g.hComboTheme, CB_GETCURSEL, 0, 0);
+    if (sel != (int)t) SendMessageW(g.hComboTheme, CB_SETCURSEL, (WPARAM)t, 0);
+
+    if (g.hwnd) {
+        InvalidateRect(g.hwnd, nullptr, TRUE);
+        UpdateWindow(g.hwnd);
+    }
+}
+
+// --- Ownerdraw rajzolo segedfuggvenyek ---
+
+static void drawThemedButton(LPDRAWITEMSTRUCT dis, bool primary) {
+    const ThemePalette& p = paletteFor(g_theme);
+    bool pressed = (dis->itemState & ODS_SELECTED) != 0;
+
+    COLORREF bgColor = primary ? p.accent : p.panelBg;
+    COLORREF borderColor = primary ? p.accent : p.panelBorder;
+    COLORREF textColor = primary ? p.accentText : p.btnSecondaryText;
+
+    HBRUSH bg = CreateSolidBrush(bgColor);
+    FillRect(dis->hDC, &dis->rcItem, bg);
+    DeleteObject(bg);
+
+    HPEN pen = CreatePen(PS_SOLID, 1, borderColor);
+    HGDIOBJ oldPen = SelectObject(dis->hDC, pen);
+    HGDIOBJ oldBrush = SelectObject(dis->hDC, GetStockObject(NULL_BRUSH));
+    Rectangle(dis->hDC, dis->rcItem.left, dis->rcItem.top, dis->rcItem.right, dis->rcItem.bottom);
+    SelectObject(dis->hDC, oldBrush);
+    SelectObject(dis->hDC, oldPen);
+    DeleteObject(pen);
+
+    wchar_t text[128];
+    GetWindowTextW(dis->hwndItem, text, 128);
+    SetBkMode(dis->hDC, TRANSPARENT);
+    SetTextColor(dis->hDC, textColor);
+    HFONT font = (HFONT)SendMessageW(dis->hwndItem, WM_GETFONT, 0, 0);
+    HGDIOBJ oldFont = font ? SelectObject(dis->hDC, font) : nullptr;
+    RECT rc = dis->rcItem;
+    if (pressed) OffsetRect(&rc, 1, 1);
+    DrawTextW(dis->hDC, text, -1, &rc, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+    if (oldFont) SelectObject(dis->hDC, oldFont);
+
+    if (dis->itemState & ODS_FOCUS) {
+        RECT rcFocus = dis->rcItem;
+        InflateRect(&rcFocus, -3, -3);
+        DrawFocusRect(dis->hDC, &rcFocus);
+    }
+}
+
+static void drawThemedComboItem(LPDRAWITEMSTRUCT dis) {
+    const ThemePalette& p = paletteFor(g_theme);
+    bool selected = (dis->itemState & ODS_SELECTED) != 0;
+
+    COLORREF bg = selected ? p.accent : p.inputBg;
+    COLORREF fg = selected ? p.accentText : p.text;
+    HBRUSH bgBrush = CreateSolidBrush(bg);
+    FillRect(dis->hDC, &dis->rcItem, bgBrush);
+    DeleteObject(bgBrush);
+
+    wchar_t buf[256] = {};
+    if ((int)dis->itemID >= 0)
+        SendMessageW(dis->hwndItem, CB_GETLBTEXT, dis->itemID, (LPARAM)buf);
+
+    SetBkMode(dis->hDC, TRANSPARENT);
+    SetTextColor(dis->hDC, fg);
+    HFONT font = (HFONT)SendMessageW(dis->hwndItem, WM_GETFONT, 0, 0);
+    HGDIOBJ oldFont = font ? SelectObject(dis->hDC, font) : nullptr;
+    RECT rc = dis->rcItem;
+    rc.left += 6;
+    DrawTextW(dis->hDC, buf, -1, &rc, DT_VCENTER | DT_SINGLELINE | DT_LEFT);
+    if (oldFont) SelectObject(dis->hDC, oldFont);
+
+    if (dis->itemState & ODS_FOCUS)
+        DrawFocusRect(dis->hDC, &dis->rcItem);
 }
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -663,12 +1032,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         INITCOMMONCONTROLSEX icc{ sizeof(icc), ICC_STANDARD_CLASSES | ICC_LISTVIEW_CLASSES };
         InitCommonControlsEx(&icc);
 
-        g.hFont = CreateFontW(-15, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-            DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-            DEFAULT_PITCH | FF_SWISS, L"Segoe UI");
-        g.hFontMono = CreateFontW(-14, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
-            DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
-            FIXED_PITCH | FF_MODERN, L"Consolas");
+        rebuildFonts();
+
+        g.hLblAppTitle = makeLabel(hwnd, ID_LBL_APPTITLE, L"BigCalc");
+        g.hLblAppSubtitle = makeLabel(hwnd, ID_LBL_APPSUBTITLE, L"");
 
         makeLabel(hwnd, ID_LBL_LEFT, widen(T(Msg::LblLeft)).c_str());
         makeLabel(hwnd, ID_LBL_OP, widen(T(Msg::LblOp)).c_str());
@@ -679,6 +1046,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         makeLabel(hwnd, ID_LBL_HEX, widen(T(Msg::LblHex)).c_str());
         makeLabel(hwnd, ID_LBL_HIST, widen(T(Msg::LblHist)).c_str());
         g.hLblLang = makeLabel(hwnd, ID_LBL_LANG, widen(T(Msg::LangLabel)).c_str());
+        g.hLblTheme = makeLabel(hwnd, ID_LBL_THEME, widen(T(Msg::ThemeLabel)).c_str());
 
         g.hLeft = makeEdit(hwnd, ID_EDIT_LEFT, false, false);
         g.hRight = makeEdit(hwnd, ID_EDIT_RIGHT, false, false);
@@ -688,34 +1056,49 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         g.hHex = makeEdit(hwnd, ID_EDIT_HEX, true, true);
 
         g.hOp = CreateWindowExW(0, L"COMBOBOX", L"",
-            WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_DROPDOWNLIST,
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED,
             0, 0, 10, 10, hwnd, (HMENU)ID_COMBO_OP, GetModuleHandleW(nullptr), nullptr);
         SendMessageW(g.hOp, CB_ADDSTRING, 0, (LPARAM)L"+");
         SendMessageW(g.hOp, CB_ADDSTRING, 0, (LPARAM)L"-");
         SendMessageW(g.hOp, CB_ADDSTRING, 0, (LPARAM)L"*");
         SendMessageW(g.hOp, CB_ADDSTRING, 0, (LPARAM)L"/");
         SendMessageW(g.hOp, CB_SETCURSEL, 2, 0); // *
+        SendMessageW(g.hOp, CB_SETITEMHEIGHT, (WPARAM)-1, 22);
+        SendMessageW(g.hOp, CB_SETITEMHEIGHT, 0, 22);
 
         g.hComboLang = CreateWindowExW(0, L"COMBOBOX", L"",
-            WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_DROPDOWNLIST,
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED,
             0, 0, 10, 10, hwnd, (HMENU)ID_COMBO_LANG, GetModuleHandleW(nullptr), nullptr);
         SendMessageW(g.hComboLang, CB_ADDSTRING, 0, (LPARAM)L"Magyar");
         SendMessageW(g.hComboLang, CB_ADDSTRING, 0, (LPARAM)L"English");
         SendMessageW(g.hComboLang, CB_ADDSTRING, 0, (LPARAM)L"Deutsch");
         SendMessageW(g.hComboLang, CB_SETCURSEL, (WPARAM)g_lang, 0);
+        SendMessageW(g.hComboLang, CB_SETITEMHEIGHT, (WPARAM)-1, 22);
+        SendMessageW(g.hComboLang, CB_SETITEMHEIGHT, 0, 22);
+
+        g.hComboTheme = CreateWindowExW(0, L"COMBOBOX", L"",
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED,
+            0, 0, 10, 10, hwnd, (HMENU)ID_COMBO_THEME, GetModuleHandleW(nullptr), nullptr);
+        SendMessageW(g.hComboTheme, CB_ADDSTRING, 0, (LPARAM)L"Terminal");
+        SendMessageW(g.hComboTheme, CB_ADDSTRING, 0, (LPARAM)L"Light");
+        SendMessageW(g.hComboTheme, CB_ADDSTRING, 0, (LPARAM)L"Fintech");
+        SendMessageW(g.hComboTheme, CB_SETCURSEL, (WPARAM)g_theme, 0);
+        SendMessageW(g.hComboTheme, CB_SETITEMHEIGHT, (WPARAM)-1, 22);
+        SendMessageW(g.hComboTheme, CB_SETITEMHEIGHT, 0, 22);
 
         g.hBtnCalc = CreateWindowExW(0, L"BUTTON", widen(T(Msg::BtnCalc)).c_str(),
-            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_DEFPUSHBUTTON,
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_OWNERDRAW,
             0, 0, 10, 10, hwnd, (HMENU)ID_BTN_CALC, GetModuleHandleW(nullptr), nullptr);
         g.hBtnClear = CreateWindowExW(0, L"BUTTON", widen(T(Msg::BtnClear)).c_str(),
-            WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_OWNERDRAW,
             0, 0, 10, 10, hwnd, (HMENU)ID_BTN_CLEAR, GetModuleHandleW(nullptr), nullptr);
 
-        g.hHist = CreateWindowExW(WS_EX_CLIENTEDGE, WC_LISTVIEWW, L"",
+        g.hHist = CreateWindowExW(0, WC_LISTVIEWW, L"",
             WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_VSCROLL | WS_HSCROLL |
             LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS,
             0, 0, 10, 10, hwnd, (HMENU)ID_LIST_HIST, GetModuleHandleW(nullptr), nullptr);
         initHistoryColumns();
+        subclassHistHeader();
 
         g.hSplitDecHex = CreateWindowExW(0, L"BigCalcSplitter", L"",
             WS_CHILD | WS_VISIBLE,
@@ -733,8 +1116,72 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         setText(g.hRight, L"1.5");
         syncExprFromParts();
 
-        applyFonts(hwnd);
+        applyTheme(g_theme);
+        applyTranslations();
         g.ready = true;
+        return 0;
+    }
+    case WM_ERASEBKGND:
+        return 1;
+    case WM_CTLCOLOREDIT:
+    case WM_CTLCOLORSTATIC: {
+        HDC hdc = (HDC)wParam;
+        HWND hCtrl = (HWND)lParam;
+        const ThemePalette& p = paletteFor(g_theme);
+        int id = GetDlgCtrlID(hCtrl);
+
+        bool isInputLike = (id == ID_EDIT_LEFT || id == ID_EDIT_RIGHT || id == ID_EDIT_PREC ||
+                             id == ID_EDIT_EXPR || id == ID_EDIT_DEC || id == ID_EDIT_HEX);
+        if (isInputLike) {
+            SetBkMode(hdc, OPAQUE);
+            SetBkColor(hdc, p.inputBg);
+            SetTextColor(hdc, p.text);
+            return (INT_PTR)g.hInputBrush;
+        }
+
+        SetBkMode(hdc, TRANSPARENT);
+        COLORREF fg = p.textDim;
+        if (id == ID_LBL_APPTITLE) fg = p.accent;
+        else if (id == ID_LBL_DEC || id == ID_LBL_HEX || id == ID_LBL_HIST) fg = p.accent;
+        else if (id == ID_LBL_APPSUBTITLE || id == ID_STATUS) fg = p.textDim;
+        SetTextColor(hdc, fg);
+        return (INT_PTR)g.hBgBrush;
+    }
+    case WM_DRAWITEM: {
+        auto* dis = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+        if (dis->CtlID == ID_BTN_CALC || dis->CtlID == ID_BTN_CLEAR) {
+            drawThemedButton(dis, dis->CtlID == ID_BTN_CALC);
+            return TRUE;
+        }
+        if (dis->CtlID == ID_COMBO_OP || dis->CtlID == ID_COMBO_LANG || dis->CtlID == ID_COMBO_THEME) {
+            drawThemedComboItem(dis);
+            return TRUE;
+        }
+        return FALSE;
+    }
+    case WM_PAINT: {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        const ThemePalette& p = paletteFor(g_theme);
+        FillRect(hdc, &ps.rcPaint, g.hBgBrush);
+
+        auto drawCard = [&](const RECT& rc) {
+            HBRUSH b = CreateSolidBrush(p.panelBg);
+            FillRect(hdc, &rc, b);
+            DeleteObject(b);
+            HPEN pen = CreatePen(PS_SOLID, 1, p.panelBorder);
+            HGDIOBJ oldPen = SelectObject(hdc, pen);
+            HGDIOBJ oldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
+            Rectangle(hdc, rc.left, rc.top, rc.right, rc.bottom);
+            SelectObject(hdc, oldBrush);
+            SelectObject(hdc, oldPen);
+            DeleteObject(pen);
+        };
+        drawCard(g.rcDecCard);
+        drawCard(g.rcHexCard);
+        drawCard(g.rcHistCard);
+
+        EndPaint(hwnd, &ps);
         return 0;
     }
     case WM_SIZE: {
@@ -743,8 +1190,8 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
     }
     case WM_GETMINMAXINFO: {
         auto* mmi = reinterpret_cast<MINMAXINFO*>(lParam);
-        mmi->ptMinTrackSize.x = 640;
-        mmi->ptMinTrackSize.y = 520;
+        mmi->ptMinTrackSize.x = 760;
+        mmi->ptMinTrackSize.y = 560;
         return 0;
     }
     case WM_COMMAND: {
@@ -752,13 +1199,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         int code = HIWORD(wParam);
 
         if (id == ID_BTN_CALC) {
-            // Ha a kifejezés mező aktív, azt használjuk; különben a három részmezőt.
             bool fromParts = (GetFocus() != g.hExpr);
             runCalculate(fromParts, true);
             return 0;
         }
-        // Szandekosan NINCS EN_CHANGE automatikus szamitas:
-        // a mezok kitoltese inditaskor 4x hibadobozt dobott, es megakasztotta az ablakot.
         if (id == ID_BTN_CLEAR) {
             setText(g.hLeft, L"");
             setText(g.hRight, L"");
@@ -778,6 +1222,14 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
                 saveLangToIni();
                 applyTranslations();
                 layoutControls(g.clientW, g.clientH);
+            }
+            return 0;
+        }
+        if (id == ID_COMBO_THEME && code == CBN_SELCHANGE) {
+            int sel = (int)SendMessageW(g.hComboTheme, CB_GETCURSEL, 0, 0);
+            if (sel >= 0 && sel <= 2) {
+                saveThemeToIni();
+                applyTheme(static_cast<Theme>(sel));
             }
             return 0;
         }
@@ -813,6 +1265,23 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         auto* hdr = reinterpret_cast<LPNMHDR>(lParam);
         if (!hdr || hdr->idFrom != ID_LIST_HIST) return 0;
 
+        if (hdr->code == NM_CUSTOMDRAW) {
+            auto* cd = reinterpret_cast<LPNMLVCUSTOMDRAW>(lParam);
+            const ThemePalette& p = paletteFor(g_theme);
+            switch (cd->nmcd.dwDrawStage) {
+            case CDDS_PREPAINT:
+                return CDRF_NOTIFYITEMDRAW;
+            case CDDS_ITEMPREPAINT: {
+                bool sel = (ListView_GetItemState(g.hHist, (int)cd->nmcd.dwItemSpec, LVIS_SELECTED) & LVIS_SELECTED) != 0;
+                cd->clrText = sel ? p.tableSelText : p.text;
+                cd->clrTextBk = sel ? p.tableSelBg : p.tableRowBg;
+                return CDRF_DODEFAULT;
+            }
+            default:
+                return CDRF_DODEFAULT;
+            }
+        }
+
         if (hdr->code == NM_CLICK || hdr->code == NM_RCLICK || hdr->code == NM_DBLCLK) {
             auto* ia = reinterpret_cast<LPNMITEMACTIVATE>(lParam);
             int row = ia->iItem;
@@ -835,8 +1304,13 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
         return 0;
     }
     case WM_DESTROY:
-        if (g.hFont) DeleteObject(g.hFont);
+        if (g.hFontTitle) DeleteObject(g.hFontTitle);
+        if (g.hFontUi) DeleteObject(g.hFontUi);
+        if (g.hFontUiSemibold) DeleteObject(g.hFontUiSemibold);
         if (g.hFontMono) DeleteObject(g.hFontMono);
+        if (g.hBgBrush) DeleteObject(g.hBgBrush);
+        if (g.hInputBrush) DeleteObject(g.hInputBrush);
+        removeBundledFonts();
         PostQuitMessage(0);
         return 0;
     }
@@ -846,7 +1320,9 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
 int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, PWSTR, int nShow) {
     const wchar_t* cls = L"BigCalcGuiWnd";
 
+    loadBundledFonts();
     loadLangFromIni();
+    loadThemeFromIni();
     registerSplitterClass(hInst);
 
     WNDCLASSEXW wc{};
@@ -855,7 +1331,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, PWSTR, int nShow) {
     wc.lpfnWndProc = WndProc;
     wc.hInstance = hInst;
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wc.hbrBackground = nullptr;
     wc.lpszClassName = cls;
     wc.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
     wc.hIconSm = wc.hIcon;
@@ -864,7 +1340,7 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, PWSTR, int nShow) {
     HWND hwnd = CreateWindowExW(
         0, cls, widen(T(Msg::WinTitle)).c_str(),
         WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 960, 720,
+        CW_USEDEFAULT, CW_USEDEFAULT, 1080, 780,
         nullptr, nullptr, hInst, nullptr);
 
     ShowWindow(hwnd, nShow);

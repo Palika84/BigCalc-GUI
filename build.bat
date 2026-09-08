@@ -22,4 +22,6 @@ if errorlevel 1 (
 )
 
 echo OK: BigCalc.exe kesz.
+echo Megjegyzes: a "fonts" mappanak (mar itt van a repo gyokereben) a
+echo BigCalc.exe mellett kell maradnia a 3 megjelenesi tema betutipusaihoz.
 endlocal
