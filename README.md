@@ -1,6 +1,6 @@
 # BigCalc GUI
 
-A native Windows (Win32) high-precision calculator built for working with secp256k1 keys: a fixed-point decimal/hex big-integer calculator, elliptic-curve point arithmetic, a brute-force `Start + k·G = Target` step counter, and Bitcoin WIF/address derivation — all in one small, dependency-free desktop app.
+A high-precision calculator built for working with secp256k1 keys: a fixed-point decimal/hex big-integer calculator, elliptic-curve point arithmetic, a brute-force `Start + k·G = Target` step counter, and Bitcoin WIF/address derivation — all in one small desktop app. Ships as a native Qt6 GUI on Linux (`main.cpp`) and a native Win32 GUI on Windows (`main_win32.cpp`), sharing the same dependency-free calculator/crypto core.
 
 *[Magyar leírás → README.hu.md](README.hu.md)*
 
@@ -14,9 +14,26 @@ A native Windows (Win32) high-precision calculator built for working with secp25
 - **Bitcoin key derivation** — every scalar or curve result is automatically expanded into its compressed pubkey, P2PKH address, and WIF (when a private key is available). SHA-256, RIPEMD-160, and Base58Check are implemented from scratch, no external crypto library.
 - **History panel** — every calculation is logged with its expression, result, WIF, pubkey, and address; click to select, double-click or `Ctrl+C` to copy a cell, right-click for a row/cell copy menu.
 - **Hungarian / English / German UI** — switch languages live from the dropdown in the top-right corner; the choice is remembered next to the executable.
-- **Zero external dependencies** — pure Win32 API + the C++ standard library, statically linked.
+- **Three visual themes (Linux/Qt6 build)** — switch live from the "Appearance" dropdown next to the language switcher; the choice is remembered next to the executable, in `bigcalc_theme.ini`:
+  - **Terminal / Crypto Dark** — phosphor-green monospace terminal look (JetBrains Mono everywhere).
+  - **Modern Light Dashboard** — clean white cards, indigo accent (Manrope + IBM Plex Mono).
+  - **Dark Fintech / Exchange** — premium dark navy with a gold accent (Space Grotesk + IBM Plex Mono).
+- **Minimal dependencies** — the calculator/crypto core has zero external dependencies; the GUI layer uses Qt6 Widgets on Linux or plain Win32 API on Windows.
 
 ## Build
+
+### Linux / Ubuntu (Qt6)
+
+Requires the Qt6 Widgets development package:
+
+```bash
+sudo apt install qt6-base-dev cmake build-essential
+./build.sh
+```
+
+produces `build/BigCalc`. `build.sh` just wraps `cmake` + `cmake --build` (see `CMakeLists.txt`).
+
+### Windows (Win32)
 
 Requires [MSYS2](https://www.msys2.org/) with the `mingw-w64-x86_64-gcc` toolchain (`g++`) installed at `C:\msys64\mingw64`.
 
@@ -52,15 +69,20 @@ The **Decimal** and **Hexadecimal** result panels show the raw numeric or point 
 ## Project layout
 
 ```
-main.cpp                 Win32 GUI, window/layout, event loop
+main.cpp                 Qt6 Widgets GUI (Linux), window/layout, event handling, theming
+main_win32.cpp           Win32 GUI (Windows), window/layout, event loop
 Lang.hpp                 HU/EN/DE translation table for every user-facing string
+Theme.hpp                visual theme enum + bigcalc_theme.ini load/save (Linux/Qt6 build)
 Calculator.hpp           fixed-point decimal/hex big-integer calculator
 ModeEngine.hpp           input classification + the "smart" DEC/HEX/G-mode dispatcher
 BigInt.hpp               arbitrary-precision signed integer
 crypto/
   SecpAffine.*            secp256k1 field/curve arithmetic (affine), Range-Count
   BitcoinCrypto.*         SHA-256, RIPEMD-160, Base58Check, WIF/address derivation
-test_calc.cpp, test_btc.cpp, test_btc_vectors.cpp   self-tests
+fonts/                   bundled OFL-licensed webfonts for the 3 Qt6 themes (see fonts/*/OFL.txt)
+CMakeLists.txt, build.sh Linux (Qt6) build
+build.bat                Windows (Win32) build
+test_calc.cpp, test_btc.cpp, test_btc_vectors.cpp   self-tests (platform-independent)
 ```
 
 ## Security note

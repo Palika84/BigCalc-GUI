@@ -4,6 +4,9 @@
 *.obj
 compile_out.txt
 calc_pre.txt
+build/
+BigCalc
 
 # Runtime-generated, per-machine
 bigcalc_lang.ini
+bigcalc_theme.ini

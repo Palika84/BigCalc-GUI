@@ -1,6 +1,6 @@
 # BigCalc GUI
 
-Natív Windows (Win32) nagy pontosságú kalkulátor secp256k1 kulcsokkal való munkához: fixpontos decimális/hexadecimális nagyszám-kalkulátor, elliptikus görbe pont-aritmetika, egy nyers erős `Start + k·G = Cél` lépésszámláló (Range-Count), és Bitcoin WIF/cím-származtatás — mindez egyetlen kis, külső függőség nélküli asztali programban.
+Nagy pontosságú kalkulátor secp256k1 kulcsokkal való munkához: fixpontos decimális/hexadecimális nagyszám-kalkulátor, elliptikus görbe pont-aritmetika, egy nyers erős `Start + k·G = Cél` lépésszámláló (Range-Count), és Bitcoin WIF/cím-származtatás — mindez egyetlen kis asztali programban. Linuxon natív Qt6 GUI-val (`main.cpp`), Windowson natív Win32 GUI-val (`main_win32.cpp`) fut, ugyanazt a külső függőség nélküli kalkulátor/kripto magot használva mindkettő.
 
 *[English description → README.md](README.md)*
 
@@ -14,9 +14,26 @@ Natív Windows (Win32) nagy pontosságú kalkulátor secp256k1 kulcsokkal való 
 - **Bitcoin kulcs-származtatás** — minden skalár vagy görbe-eredményhez automatikusan előáll a compressed pubkey, a P2PKH cím, és (ha van hozzá privát kulcs) a WIF is. A SHA-256, RIPEMD-160 és Base58Check saját implementáció, nincs külső kriptó-könyvtár.
 - **Előzmények panel** — minden számítás naplózva van kifejezéssel, eredménnyel, WIF-fel, pubkey-vel és címmel; kattintással kijelölhető, dupla katt vagy `Ctrl+C` másolja a cellát, jobb klikkre cella/sor másoló menü jelenik meg.
 - **Magyar / angol / német felület** — a jobb felső sarokban lévő legördülőből azonnal válthatsz nyelvet; a választás megjegyződik az exe mellett.
-- **Nulla külső függőség** — tiszta Win32 API + C++ standard library, statikusan linkelve.
+- **Három vizuális téma (Linux/Qt6 build)** — a nyelv-váltó melletti "Megjelenés" legördülőből azonnal váltható; a választás a `bigcalc_theme.ini`-ben megjegyződik az exe mellett:
+  - **Terminál / Crypto Dark** — foszfor-zöld monospace terminál hangulat (JetBrains Mono mindenhol).
+  - **Modern Világos Dashboard** — letisztult fehér kártyák, indigó akcentus (Manrope + IBM Plex Mono).
+  - **Dark Fintech / Exchange** — prémium sötét navy arany akcentussal (Space Grotesk + IBM Plex Mono).
+- **Minimális függőség** — a kalkulátor/kripto mag külső függőség nélküli; a GUI réteg Linuxon Qt6 Widgets-et, Windowson sima Win32 API-t használ.
 
 ## Fordítás
+
+### Linux / Ubuntu (Qt6)
+
+Szükséges hozzá a Qt6 Widgets fejlesztői csomag:
+
+```bash
+sudo apt install qt6-base-dev cmake build-essential
+./build.sh
+```
+
+ez elkészíti a `build/BigCalc`-ot. A `build.sh` csak becsomagolja a `cmake` + `cmake --build` hívásokat (lásd `CMakeLists.txt`).
+
+### Windows (Win32)
 
 Szükséges hozzá az [MSYS2](https://www.msys2.org/) a `mingw-w64-x86_64-gcc` toolchain-nel (`g++`), a `C:\msys64\mingw64` alá telepítve.
 
