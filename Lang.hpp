@@ -147,6 +147,11 @@ enum class Msg {
     StatusSelectedPrefix,
     StatusSelectedSuffix,
     LangLabel,
+    AppSubtitle,
+    ThemeLabel,
+    ThemeTerminal,
+    ThemeLight,
+    ThemeFintech,
 
     _Count
 };
@@ -281,6 +286,11 @@ inline const std::array<Tri, static_cast<size_t>(Msg::_Count)>& msgTable() {
         /* StatusSelectedPrefix */              {"Kijelölve: ", "Selected: ", "Ausgewählt: "},
         /* StatusSelectedSuffix */              {"  (Ctrl+C vagy dupla katt = másolás)", "  (Ctrl+C or double-click = copy)", "  (Strg+C oder Doppelklick = kopieren)"},
         /* LangLabel */                         {"Nyelv", "Language", "Sprache"},
+        /* AppSubtitle */                       {"nagy pontosságú secp256k1 kalkulátor", "high-precision secp256k1 calculator", "hochpräziser secp256k1-Rechner"},
+        /* ThemeLabel */                        {"Megjelenés", "Appearance", "Erscheinungsbild"},
+        /* ThemeTerminal */                     {"Terminál (sötét)", "Terminal (dark)", "Terminal (dunkel)"},
+        /* ThemeLight */                        {"Világos", "Light", "Hell"},
+        /* ThemeFintech */                      {"Fintech (sötét)", "Fintech (dark)", "Fintech (dunkel)"},
     }};
     return t;
 }

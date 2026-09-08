@@ -10,7 +10,7 @@ set "PATH=%MINGW%;%PATH%"
 g++ -std=c++17 -O2 -municode -mwindows ^
   -static -static-libgcc -static-libstdc++ ^
   -I. ^
-  main.cpp ^
+  main_win32.cpp ^
   crypto/BitcoinCrypto.cpp ^
   crypto/SecpAffine.cpp ^
   -o BigCalc.exe ^

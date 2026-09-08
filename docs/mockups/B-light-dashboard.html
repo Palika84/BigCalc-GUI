@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>BigCalc — B) Modern Light Dashboard</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: oklch(0.55 0.18 265); text-decoration: none; }
+    a:hover { color: oklch(0.45 0.19 265); }
+  </style>
+
+<style>html,body{height:100%;}</style>
+</head>
+<body style="margin:0;">
+<div style="width:1180px; height:820px; margin:0 auto;">
+
+
+
+<div style="width:100%; height:100%; box-sizing:border-box; background:oklch(0.98 0.004 250); font-family:'Manrope', system-ui, sans-serif; color:oklch(0.26 0.02 260); padding:26px 30px; display:flex; flex-direction:column; gap:18px;">
+
+  <!-- header -->
+  <div style="display:flex; align-items:center; justify-content:space-between;">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <div style="width:38px; height:38px; border-radius:10px; background:oklch(0.94 0.035 265); display:flex; align-items:center; justify-content:center;">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#4f5fd1" stroke-width="1.8" stroke-linecap="round">
+          <circle cx="5" cy="18" r="2.4"></circle>
+          <circle cx="19" cy="6" r="2.4"></circle>
+          <circle cx="14" cy="14" r="2.4"></circle>
+          <path d="M7 16.3 L12.2 15.2 M15.9 12.6 L17.5 8.3"></path>
+        </svg>
+      </div>
+      <div>
+        <div style="font-size:19px; font-weight:800; letter-spacing:-0.01em; color:oklch(0.22 0.02 260);">BigCalc</div>
+        <div style="font-size:12px; color:oklch(0.55 0.02 260); margin-top:1px;">Nagy pontosságú secp256k1 kalkulátor</div>
+      </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <div style="font-size:11px; font-weight:600; padding:6px 12px; border-radius:100px; background:oklch(0.94 0.035 265); color:#4f5fd1;">Qt6 · Linux</div>
+    </div>
+  </div>
+
+  <!-- controls row -->
+  <div style="display:flex; gap:12px; align-items:flex-end;">
+    <div style="flex:4; display:flex; flex-direction:column; gap:6px; min-width:0;">
+      <label style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 260);">Bal <span style="font-weight:500; color:oklch(0.65 0.02 260);">(szám=DEC · 0x=HEX · 02/03/04/G=görbe)</span></label>
+      <input value="0xFF" style="background:#fff; border:1.5px solid #4f5fd1; border-radius:8px; color:oklch(0.22 0.02 260); padding:9px 12px; font:600 14px 'IBM Plex Mono',monospace; box-shadow:0 0 0 3px oklch(0.55 0.18 265 / 0.1);">
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:6px; min-width:0;">
+      <label style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 260);">Művelet</label>
+      <div style="display:flex; align-items:center; justify-content:space-between; background:oklch(0.955 0.005 250); border:1px solid oklch(0.88 0.006 250); border-radius:8px; padding:9px 12px; font:600 14px 'IBM Plex Mono',monospace; color:oklch(0.3 0.02 260);">
+        <span>×</span>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="oklch(0.55 0.02 260)" stroke-width="2.5"><path d="M6 9l6 6 6-6"></path></svg>
+      </div>
+    </div>
+    <div style="flex:3; display:flex; flex-direction:column; gap:6px; min-width:0;">
+      <label style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 260);">Jobb oldali operandus</label>
+      <input value="1.5" style="background:oklch(0.955 0.005 250); border:1px solid oklch(0.88 0.006 250); border-radius:8px; color:oklch(0.3 0.02 260); padding:9px 12px; font:14px 'IBM Plex Mono',monospace;">
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:6px; min-width:0;">
+      <label style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 260);">Pontosság</label>
+      <input value="3" style="background:oklch(0.955 0.005 250); border:1px solid oklch(0.88 0.006 250); border-radius:8px; color:oklch(0.3 0.02 260); padding:9px 12px; font:14px 'IBM Plex Mono',monospace; text-align:center;">
+    </div>
+    <div style="flex:2; display:flex; flex-direction:column; gap:6px; min-width:0;">
+      <label style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 260);">Nyelv</label>
+      <div style="display:flex; background:oklch(0.955 0.005 250); border:1px solid oklch(0.88 0.006 250); border-radius:8px; padding:3px; gap:3px;">
+        <div style="flex:1; text-align:center; padding:6px 0; font-size:12px; font-weight:700; background:#4f5fd1; color:#fff; border-radius:6px;">HU</div>
+        <div style="flex:1; text-align:center; padding:6px 0; font-size:12px; font-weight:600; color:oklch(0.5 0.02 260);">EN</div>
+        <div style="flex:1; text-align:center; padding:6px 0; font-size:12px; font-weight:600; color:oklch(0.5 0.02 260);">DE</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- expression row -->
+  <div style="display:flex; flex-direction:column; gap:6px;">
+    <label style="font-size:11.5px; font-weight:600; color:oklch(0.5 0.02 260);">Teljes kifejezés <span style="font-weight:500; color:oklch(0.65 0.02 260);">(opcionális, pl. 1 * G)</span></label>
+    <div style="display:flex; gap:10px;">
+      <input value="0xFF * 1.5" style="flex:1; min-width:0; background:oklch(0.955 0.005 250); border:1px solid oklch(0.88 0.006 250); border-radius:8px; color:oklch(0.3 0.02 260); padding:10px 12px; font:14px 'IBM Plex Mono',monospace;">
+      <button style="border:none; border-radius:8px; padding:0 20px; background:#4f5fd1; color:#fff; font:700 13px 'Manrope',sans-serif; cursor:pointer; box-shadow:0 4px 14px oklch(0.55 0.18 265 / 0.35);">Számítás</button>
+      <button style="border:1px solid oklch(0.85 0.006 250); border-radius:8px; padding:0 18px; background:#fff; color:oklch(0.4 0.02 260); font:700 13px 'Manrope',sans-serif; cursor:pointer;">Törlés</button>
+    </div>
+  </div>
+
+  <!-- panels -->
+  <div style="display:flex; flex-direction:column; gap:12px; flex:1; min-height:0;">
+
+    <div style="background:#fff; border:1px solid oklch(0.91 0.005 250); border-radius:12px; box-shadow:0 1px 2px oklch(0.25 0.02 260 / 0.05), 0 6px 18px oklch(0.25 0.02 260 / 0.04); padding:12px 16px; flex:0 0 auto;">
+      <div style="font-size:11.5px; font-weight:700; letter-spacing:0.04em; color:oklch(0.5 0.02 260); text-transform:uppercase; margin-bottom:6px;">Decimális eredmény</div>
+      <div style="font:12.5px 'IBM Plex Mono',monospace; line-height:1.65; white-space:pre; color:oklch(0.28 0.02 260);">[G/GÖRBE] G-mód pont X=79be667e...
+X=79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
+Y=483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B</div>
+    </div>
+
+    <div style="background:#fff; border:1px solid oklch(0.91 0.005 250); border-radius:12px; box-shadow:0 1px 2px oklch(0.25 0.02 260 / 0.05), 0 6px 18px oklch(0.25 0.02 260 / 0.04); padding:12px 16px; flex:0 0 auto;">
+      <div style="font-size:11.5px; font-weight:700; letter-spacing:0.04em; color:oklch(0.5 0.02 260); text-transform:uppercase; margin-bottom:6px;">Hexadecimális eredmény</div>
+      <div style="font:12.5px 'IBM Plex Mono',monospace; color:oklch(0.28 0.02 260);">0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798</div>
+    </div>
+
+    <div style="background:#fff; border:1px solid oklch(0.91 0.005 250); border-radius:12px; box-shadow:0 1px 2px oklch(0.25 0.02 260 / 0.05), 0 6px 18px oklch(0.25 0.02 260 / 0.04); flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;">
+      <div style="font-size:11.5px; font-weight:700; letter-spacing:0.04em; color:oklch(0.5 0.02 260); text-transform:uppercase; padding:12px 16px 8px;">Előzmények</div>
+      <div style="display:grid; grid-template-columns:1.3fr 1.5fr 1.7fr 1.7fr 1.7fr; padding:8px 16px; font-size:11px; font-weight:700; letter-spacing:0.03em; color:oklch(0.55 0.02 260); background:oklch(0.97 0.003 250); border-top:1px solid oklch(0.92 0.005 250); border-bottom:1px solid oklch(0.92 0.005 250);">
+        <div>KIFEJEZÉS</div><div>EREDMÉNY</div><div>WIF</div><div>PUB</div><div>CÍM</div>
+      </div>
+      <div style="display:grid; grid-template-columns:1.3fr 1.5fr 1.7fr 1.7fr 1.7fr; padding:9px 16px; font:12.5px 'IBM Plex Mono',monospace; border-bottom:1px solid oklch(0.94 0.004 250); color:oklch(0.3 0.02 260);">
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">0xFF * 1.5</div>
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px; color:#4f5fd1; font-weight:600;">382.500</div>
+        <div style="color:oklch(0.75 0.01 260);">-</div>
+        <div style="color:oklch(0.75 0.01 260);">-</div>
+        <div style="color:oklch(0.75 0.01 260);">-</div>
+      </div>
+      <div style="display:grid; grid-template-columns:1.3fr 1.5fr 1.7fr 1.7fr 1.7fr; padding:9px 16px; font:12.5px 'IBM Plex Mono',monospace; border-bottom:1px solid oklch(0.94 0.004 250); color:oklch(0.3 0.02 260); background:oklch(0.97 0.02 265 / 0.5);">
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">1 * G</div>
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">0279be667e...16f81798</div>
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU73sVHnoWn</div>
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">0279be667e...16f81798</div>
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#4f5fd1; font-weight:600;">1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH</div>
+      </div>
+      <div style="display:grid; grid-template-columns:1.3fr 1.5fr 1.7fr 1.7fr 1.7fr; padding:9px 16px; font:12.5px 'IBM Plex Mono',monospace; border-bottom:1px solid oklch(0.94 0.004 250); color:oklch(0.4 0.02 260);">
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">2 * G</div>
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">02c6047f9441ed7d...c709ee5</div>
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU74NMTptX4</div>
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">02c6047f9441ed7d...c709ee5</div>
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">1cMh228HTCiwS8ZsaakH8A8wze1JR5ZsP</div>
+      </div>
+      <div style="display:grid; grid-template-columns:1.3fr 1.5fr 1.7fr 1.7fr 1.7fr; padding:9px 16px; font:12.5px 'IBM Plex Mono',monospace; color:oklch(0.4 0.02 260);">
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">Cél / Start</div>
+        <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px; color:#4f5fd1; font-weight:600;">3 lépés</div>
+        <div style="color:oklch(0.75 0.01 260);">-</div>
+        <div style="color:oklch(0.75 0.01 260);">-</div>
+        <div style="color:oklch(0.75 0.01 260);">-</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- status bar -->
+  <div style="font-size:12px; color:oklch(0.5 0.02 260); border-top:1px solid oklch(0.91 0.005 250); padding-top:8px;">
+    Mód: G/Görbe &nbsp;·&nbsp; Cím: <span style="color:#4f5fd1; font-weight:600;">1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH</span>
+  </div>
+
+</div>
+
+</div>
+</body>
+</html>

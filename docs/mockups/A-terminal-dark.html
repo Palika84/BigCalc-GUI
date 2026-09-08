@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>BigCalc — A) Terminal / Crypto Dark</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap">
+  <style>
+    @keyframes bc-scan { 0% { background-position: 0 0; } 100% { background-position: 0 8px; } }
+    body { margin: 0; }
+    a { color: #39ff88; text-decoration: none; }
+    a:hover { color: #8bffb8; }
+    ::selection { background: #39ff8855; }
+  </style>
+
+<style>html,body{height:100%;}</style>
+</head>
+<body style="margin:0;">
+<div style="width:1180px; height:820px; margin:0 auto;">
+
+
+
+<div style="position:relative; width:100%; height:100%; box-sizing:border-box; background:oklch(0.15 0.014 155); font-family:'JetBrains Mono', ui-monospace, Menlo, monospace; color:oklch(0.87 0.03 150); overflow:hidden;">
+
+  <!-- scanline texture -->
+  <div style="position:absolute; inset:0; pointer-events:none; opacity:0.35; background-image:repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, oklch(0.4 0.05 150 / 0.06) 3px, transparent 4px); animation: bc-scan 0.6s linear infinite;"></div>
+  <div style="position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at 20% 0%, oklch(0.3 0.05 150 / 0.18), transparent 60%);"></div>
+
+  <div style="position:relative; height:100%; box-sizing:border-box; padding:26px 30px; display:flex; flex-direction:column; gap:18px;">
+
+    <!-- header -->
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#39ff88" stroke-width="1.6" stroke-linecap="round">
+          <circle cx="5" cy="18" r="2.4"></circle>
+          <circle cx="19" cy="6" r="2.4"></circle>
+          <circle cx="14" cy="14" r="2.4"></circle>
+          <path d="M7 16.3 L12.2 15.2 M15.9 12.6 L17.5 8.3"></path>
+        </svg>
+        <div>
+          <div style="font-size:19px; font-weight:800; letter-spacing:0.12em; color:#39ff88; text-shadow:0 0 14px oklch(0.7 0.19 150 / 0.55);">BIGCALC</div>
+          <div style="font-size:11px; letter-spacing:0.06em; color:oklch(0.55 0.03 150); margin-top:1px;">nagy pontosságú secp256k1 kalkulátor // Linux</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="font-size:10.5px; letter-spacing:0.08em; padding:5px 10px; border:1px solid oklch(0.4 0.05 150 / 0.6); border-radius:3px; color:oklch(0.6 0.04 150);">Qt6 · v2.0</div>
+        <div style="width:8px; height:8px; border-radius:50%; background:#39ff88; box-shadow:0 0 8px #39ff88;"></div>
+      </div>
+    </div>
+
+    <!-- controls row -->
+    <div style="display:flex; gap:14px; align-items:flex-end;">
+      <div style="flex:4; display:flex; flex-direction:column; gap:6px; min-width:0;">
+        <label style="font-size:10.5px; letter-spacing:0.08em; color:oklch(0.55 0.03 150);">BAL &nbsp;<span style="color:oklch(0.42 0.02 150);">(szám=DEC · 0x=HEX · 02/03/04/G=GÖRBE)</span></label>
+        <input value="0xFF" style="background:oklch(0.11 0.01 155); border:1px solid #39ff88; border-radius:3px; color:#39ff88; padding:9px 11px; font:600 14px 'JetBrains Mono',monospace; box-shadow:0 0 10px oklch(0.7 0.19 150 / 0.25);">
+      </div>
+      <div style="flex:1.1; display:flex; flex-direction:column; gap:6px; min-width:0;">
+        <label style="font-size:10.5px; letter-spacing:0.08em; color:oklch(0.55 0.03 150);">MŰVELET</label>
+        <div style="display:flex; align-items:center; justify-content:space-between; background:oklch(0.19 0.02 155); border:1px solid oklch(0.4 0.05 150 / 0.6); border-radius:3px; padding:9px 11px; color:oklch(0.87 0.03 150); font-weight:600;">
+          <span>×</span>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"></path></svg>
+        </div>
+      </div>
+      <div style="flex:3; display:flex; flex-direction:column; gap:6px; min-width:0;">
+        <label style="font-size:10.5px; letter-spacing:0.08em; color:oklch(0.55 0.03 150);">JOBB OLDALI OPERANDUS</label>
+        <input value="1.5" style="background:oklch(0.19 0.02 155); border:1px solid oklch(0.4 0.05 150 / 0.6); border-radius:3px; color:oklch(0.87 0.03 150); padding:9px 11px; font:14px 'JetBrains Mono',monospace;">
+      </div>
+      <div style="flex:1; display:flex; flex-direction:column; gap:6px; min-width:0;">
+        <label style="font-size:10.5px; letter-spacing:0.08em; color:oklch(0.55 0.03 150);">PONTOSSÁG</label>
+        <input value="3" style="background:oklch(0.19 0.02 155); border:1px solid oklch(0.4 0.05 150 / 0.6); border-radius:3px; color:oklch(0.87 0.03 150); padding:9px 11px; font:14px 'JetBrains Mono',monospace; text-align:center;">
+      </div>
+      <div style="flex:2; display:flex; flex-direction:column; gap:6px; min-width:0;">
+        <label style="font-size:10.5px; letter-spacing:0.08em; color:oklch(0.55 0.03 150);">NYELV</label>
+        <div style="display:flex; border:1px solid oklch(0.4 0.05 150 / 0.6); border-radius:3px; overflow:hidden;">
+          <div style="flex:1; text-align:center; padding:8px 0; font-size:12px; font-weight:700; background:#39ff88; color:oklch(0.14 0.01 155);">HU</div>
+          <div style="flex:1; text-align:center; padding:8px 0; font-size:12px; color:oklch(0.55 0.03 150); border-left:1px solid oklch(0.4 0.05 150 / 0.6);">EN</div>
+          <div style="flex:1; text-align:center; padding:8px 0; font-size:12px; color:oklch(0.55 0.03 150); border-left:1px solid oklch(0.4 0.05 150 / 0.6);">DE</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- expression row -->
+    <div style="display:flex; flex-direction:column; gap:6px;">
+      <label style="font-size:10.5px; letter-spacing:0.08em; color:oklch(0.55 0.03 150);">TELJES KIFEJEZÉS &nbsp;<span style="color:oklch(0.42 0.02 150);">(opcionális, pl. 1 * G)</span></label>
+      <div style="display:flex; gap:10px;">
+        <input value="0xFF * 1.5" style="flex:1; min-width:0; background:oklch(0.19 0.02 155); border:1px solid oklch(0.4 0.05 150 / 0.6); border-radius:3px; color:oklch(0.87 0.03 150); padding:10px 12px; font:14px 'JetBrains Mono',monospace;">
+        <button style="border:none; border-radius:3px; padding:0 20px; background:#39ff88; color:oklch(0.14 0.01 155); font:800 12.5px 'JetBrains Mono',monospace; letter-spacing:0.08em; cursor:pointer; box-shadow:0 0 14px oklch(0.7 0.19 150 / 0.4);">&gt; SZÁMÍTÁS</button>
+        <button style="border:1px solid oklch(0.4 0.05 150 / 0.6); border-radius:3px; padding:0 18px; background:transparent; color:oklch(0.65 0.03 150); font:700 12.5px 'JetBrains Mono',monospace; letter-spacing:0.08em; cursor:pointer;">TÖRLÉS</button>
+      </div>
+    </div>
+
+    <!-- panels -->
+    <div style="display:flex; flex-direction:column; gap:12px; flex:1; min-height:0;">
+
+      <div style="display:flex; flex-direction:column; gap:5px; flex:0 0 auto;">
+        <div style="font-size:11px; letter-spacing:0.1em; color:#39ff88;">[ DECIMÁLIS EREDMÉNY ]</div>
+        <div style="background:oklch(0.11 0.01 155); border:1px solid oklch(0.4 0.05 150 / 0.6); border-radius:3px; padding:10px 12px; font-size:12px; line-height:1.65; white-space:pre; color:oklch(0.8 0.03 150);">[G/GÖRBE] G-mód pont X=79be667e...
+X=79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798
+Y=483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B</div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:5px; flex:0 0 auto;">
+        <div style="font-size:11px; letter-spacing:0.1em; color:#39ff88;">[ HEXADECIMÁLIS EREDMÉNY ]</div>
+        <div style="background:oklch(0.11 0.01 155); border:1px solid oklch(0.4 0.05 150 / 0.6); border-radius:3px; padding:10px 12px; font-size:12px; line-height:1.5; white-space:pre; color:oklch(0.8 0.03 150);">0279BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798</div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:5px; flex:1; min-height:0;">
+        <div style="font-size:11px; letter-spacing:0.1em; color:#39ff88;">[ ELŐZMÉNYEK ]</div>
+        <div style="background:oklch(0.11 0.01 155); border:1px solid oklch(0.4 0.05 150 / 0.6); border-radius:3px; flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden;">
+          <div style="display:grid; grid-template-columns:1.3fr 1.5fr 1.7fr 1.7fr 1.7fr; padding:8px 12px; font-size:10.5px; letter-spacing:0.06em; color:oklch(0.55 0.03 150); border-bottom:1px solid oklch(0.4 0.05 150 / 0.4);">
+            <div>KIFEJEZÉS</div><div>EREDMÉNY</div><div>WIF</div><div>PUB</div><div>CÍM</div>
+          </div>
+          <div style="display:grid; grid-template-columns:1.3fr 1.5fr 1.7fr 1.7fr 1.7fr; padding:8px 12px; font-size:12px; gap:0; border-bottom:1px solid oklch(0.4 0.05 150 / 0.18); color:oklch(0.78 0.03 150);">
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">0xFF * 1.5</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px; color:#39ff88;">382.500</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:oklch(0.42 0.02 150);">-</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:oklch(0.42 0.02 150);">-</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:oklch(0.42 0.02 150);">-</div>
+          </div>
+          <div style="display:grid; grid-template-columns:1.3fr 1.5fr 1.7fr 1.7fr 1.7fr; padding:8px 12px; font-size:12px; border-bottom:1px solid oklch(0.4 0.05 150 / 0.18); color:oklch(0.78 0.03 150); background:oklch(0.22 0.03 150 / 0.35);">
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">1 * G</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">0279be667e...16f81798</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU73sVHnoWn</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">0279be667e...16f81798</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#39ff88;">1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH</div>
+          </div>
+          <div style="display:grid; grid-template-columns:1.3fr 1.5fr 1.7fr 1.7fr 1.7fr; padding:8px 12px; font-size:12px; border-bottom:1px solid oklch(0.4 0.05 150 / 0.18); color:oklch(0.68 0.03 150);">
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">2 * G</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">02c6047f9441ed7d...c709ee5</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">KwDiBf89QgGbjEhKnhXJuH7LrciVrZi3qYjgd9M7rFU74NMTptX4</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">02c6047f9441ed7d...c709ee5</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">1cMh228HTCiwS8ZsaakH8A8wze1JR5ZsP</div>
+          </div>
+          <div style="display:grid; grid-template-columns:1.3fr 1.5fr 1.7fr 1.7fr 1.7fr; padding:8px 12px; font-size:12px; color:oklch(0.68 0.03 150);">
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px;">Cél / Start</div>
+            <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding-right:8px; color:#39ff88;">3 lépés</div>
+            <div style="color:oklch(0.42 0.02 150);">-</div>
+            <div style="color:oklch(0.42 0.02 150);">-</div>
+            <div style="color:oklch(0.42 0.02 150);">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- status bar -->
+    <div style="font-size:11px; color:oklch(0.55 0.03 150); border-top:1px solid oklch(0.4 0.05 150 / 0.4); padding-top:8px;">
+      &gt; MÓD: G/GÖRBE &nbsp;|&nbsp; CÍM: <span style="color:#39ff88;">1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH</span>
+    </div>
+
+  </div>
+</div>
+
+
+</div>
+</body>
+</html>
